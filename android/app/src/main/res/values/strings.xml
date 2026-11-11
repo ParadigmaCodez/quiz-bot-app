@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quiz Bot Floating</string>
+    <string name="accessibility_service_description">Layanan otomatisasi pembaca kuis melayang.</string>
+</resources>
+
