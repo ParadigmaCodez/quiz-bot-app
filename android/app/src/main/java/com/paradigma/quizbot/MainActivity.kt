@@ -1,4 +1,4 @@
-ackage com.paradigma.quizbot
+package com.paradigma.quizbot
 
 import android.content.Intent
 import android.net.Uri
@@ -20,21 +20,19 @@ class MainActivity : AppCompatActivity() {
         val btnStart = findViewById<Button>(R.id.btnStartFloating)
         val btnStop = findViewById<Button>(R.id.btnStopFloating)
 
-        // Tombol Menyala
         btnStart.setOnClickListener {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)) {
                 startService(Intent(this, FloatingService::class.java))
-                Toast.makeText(this, "Widget Melayang Aktif!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Widget Melayang Aktif! 🚀", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
                 checkOverlayPermission()
             }
         }
 
-        // Tombol Matikan
         btnStop.setOnClickListener {
             stopService(Intent(this, FloatingService::class.java))
-            Toast.makeText(this, "Widget Melayang Dimatikan!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Widget Melayang Dimatikan! ❌", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -48,4 +46,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
