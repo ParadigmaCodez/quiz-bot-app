@@ -13,22 +13,24 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
       with:
-        node-version: '18'
+        java-version: '17'
+        distribution: 'temurin'
 
-    - name: Install Dependencies & Run Test
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Build Debug APK
       run: |
-        npm init -y
-        npm install axios
-        node bot.js
+        cd android
+        chmod +x gradlew || true
+        gradle assembleDebug
 
-    - name: Upload Artifact
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: QuizBot-Script
-        path: bot.js
+        name: QuizBot-Floating-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
 
