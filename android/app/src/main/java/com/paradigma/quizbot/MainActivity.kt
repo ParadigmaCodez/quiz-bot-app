@@ -1,4 +1,4 @@
-package com.paradigma.quizbot
+ackage com.paradigma.quizbot
 
 import android.content.Intent
 import android.net.Uri
@@ -18,14 +18,23 @@ class MainActivity : AppCompatActivity() {
         checkOverlayPermission()
 
         val btnStart = findViewById<Button>(R.id.btnStartFloating)
+        val btnStop = findViewById<Button>(R.id.btnStopFloating)
+
+        // Tombol Menyala
         btnStart.setOnClickListener {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)) {
                 startService(Intent(this, FloatingService::class.java))
-                Toast.makeText(this, "Service Melayang Dijalankan!", Toast.LENGTH_SHORT).show()
-                finish() // Tutup layar utama agar kembali ke home screen
+                Toast.makeText(this, "Widget Melayang Aktif!", Toast.LENGTH_SHORT).show()
+                finish()
             } else {
                 checkOverlayPermission()
             }
+        }
+
+        // Tombol Matikan
+        btnStop.setOnClickListener {
+            stopService(Intent(this, FloatingService::class.java))
+            Toast.makeText(this, "Widget Melayang Dimatikan!", Toast.LENGTH_SHORT).show()
         }
     }
 

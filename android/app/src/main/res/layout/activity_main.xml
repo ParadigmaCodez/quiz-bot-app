@@ -17,17 +17,25 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tekan tombol di bawah untuk menampilkan jendela melayang."
+        android:text="Kelola layanan widget melayang kuis otomatis."
         android:gravity="center"
         android:layout_marginTop="12dp"
         android:textColor="#555555" />
 
     <Button
         android:id="@+id/btnStartFloating"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="Mulai Widget Melayang 🚀" />
+
+    <Button
+        android:id="@+id/btnStopFloating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="#D32F2F"
+        android:text="Matikan Widget Melayang ❌" />
 
 </LinearLayout>
 
