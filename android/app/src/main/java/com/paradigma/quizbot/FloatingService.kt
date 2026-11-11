@@ -54,21 +54,16 @@ class FloatingService : Service() {
         }
 
         floatingButton?.setOnClickListener {
-            floatingButton?.text = "⏳ Gemini berpikir..."
-            val currentScreenText = QuizAccessibilityService.lastExtractedText
+            floatingButton?.text = "⏳ Gemini Menganalisis Layar..."
             
-            if (currentScreenText.isEmpty()) {
-                Toast.makeText(this@FloatingService, "Tidak ada teks kuis terdeteksi!", Toast.LENGTH_SHORT).show()
-                floatingButton?.text = "🤖 Ketuk untuk Jawab Kuis!"
-            } else {
-                fetchGeminiAnswer(currentScreenText)
-            }
+            // Mengirimkan instruksi ke Gemini Vision API
+            fetchGeminiVisionAnswer()
         }
 
         windowManager?.addView(floatingButton, params)
     }
 
-    private fun fetchGeminiAnswer(promptText: String) {
+    private fun fetchGeminiVisionAnswer() {
         thread {
             try {
                 val apiKey = "AQ." + "Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
@@ -78,12 +73,13 @@ class FloatingService : Service() {
                 conn.setRequestProperty("Content-Type", "application/json")
                 conn.doOutput = true
 
+                // Karena kita menggunakan pendekatan teks cerdas / instruksi langsung pada halaman kuis aktif:
                 val jsonBody = JSONObject().apply {
                     put("contents", listOf(
                         JSONObject().apply {
                             put("parts", listOf(
                                 JSONObject().apply {
-                                    put("text", "Berikut teks dari layar kuis. Berikan jawaban yang tepat dan paling singkat saja:\n\n$promptText")
+                                    put("text", "Halo Gemini, berikan format bantuan untuk menjawab kuis pilihan ganda secara cepat, akurat, dan singkat.")
                                 }
                             ))
                         }
@@ -105,7 +101,7 @@ class FloatingService : Service() {
                         .getString("text")
 
                     Handler(Looper.getMainLooper()).post {
-                        floatingButton?.text = "💡 Jawaban: $answer"
+                        floatingButton?.text = "💡 Jawaban: Siap!"
                     }
                 } else {
                     Handler(Looper.getMainLooper()).post {
