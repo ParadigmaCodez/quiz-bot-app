@@ -4,10 +4,18 @@ import android.app.Service
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
+import org.json.JSONObject
 
 class FloatingService : Service() {
 
@@ -21,10 +29,11 @@ class FloatingService : Service() {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         floatingView = TextView(this).apply {
-            text = "🤖 Quiz Bot Active"
-            setBackgroundColor(Color.parseColor("#80000000"))
-            setTextColor(Color.WHITE)
-            setPadding(32, 16, 32, 16)
+            text = "🤖 Ketuk untuk Jawab Kuis!"
+            setBackgroundColor(Color.parseColor("#CC000000"))
+            setTextColor(Color.GREEN)
+            setPadding(32, 20, 32, 20)
+            textSize = 14f
         }
 
         val layoutParamsType = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -40,12 +49,73 @@ class FloatingService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 100
-            y = 200
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = 150
+        }
+
+        floatingView?.setOnClickListener {
+            val currentScreenText = QuizAccessibilityService.lastExtractedText
+            if (currentScreenText.isEmpty()) {
+                Toast.makeText(this, "Tidak ada teks kuis terdeteksi di layar!", Toast.LENGTH_SHORT).show()
+            } else {
+                floatingView?.text = "⏳ Gemini berpikir..."
+                fetchGeminiAnswer(currentScreenText)
+            }
         }
 
         windowManager?.addView(floatingView, params)
+    }
+
+    private fun fetchGeminiAnswer(promptText: String) {
+        thread {
+            try {
+                val apiKey = "AQ_Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
+                val url = URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+
+                val jsonBody = JSONObject().apply {
+                    put("contents", listOf(
+                        JSONObject().apply {
+                            put("parts", listOf(
+                                JSONObject().apply {
+                                    put("text", "Berikut teks dari layar kuis. Berikan jawaban yang tepat dan paling singkat saja:\n\n$promptText")
+                                }
+                            ))
+                        }
+                    ))
+                }
+
+                val writer = OutputStreamWriter(conn.outputStream)
+                writer.write(jsonBody.toString())
+                writer.flush()
+
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().readText()
+                    val jsonResp = JSONObject(response)
+                    val answer = jsonResp.getJSONArray("candidates")
+                        .getJSONObject(0)
+                        .getJSONObject("content")
+                        .getJSONArray("parts")
+                        .getJSONObject(0)
+                        .getString("text")
+
+                    Handler(Looper.getMainLooper()).post {
+                        floatingView?.text = "💡 Jawaban: $answer"
+                    }
+                } else {
+                    Handler(Looper.getMainLooper()).post {
+                        floatingView?.text = "❌ Gagal koneksi AI (${conn.responseCode})"
+                    }
+                }
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    floatingView?.text = "⚠️ Error: ${e.message}"
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -53,4 +123,3 @@ class FloatingService : Service() {
         if (floatingView != null) windowManager?.removeView(floatingView)
     }
 }
-
