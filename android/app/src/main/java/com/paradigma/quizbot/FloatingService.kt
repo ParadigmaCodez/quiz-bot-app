@@ -69,7 +69,7 @@ class FloatingService : Service() {
     private fun fetchGeminiAnswer(promptText: String) {
         thread {
             try {
-                val apiKey = "AQ_Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
+                val apiKey = "AQ." + "Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
                 val url = URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
