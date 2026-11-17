@@ -10,7 +10,6 @@ import android.os.Looper
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.Toast
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -55,7 +54,7 @@ class FloatingService : Service() {
         }
 
         floatingButton?.setOnClickListener {
-            floatingButton?.text = "⏳ Gemini Menganalisis..."
+            floatingButton?.text = "⏳ Menganalisis..."
             fetchGeminiAnswer()
         }
 
@@ -66,7 +65,8 @@ class FloatingService : Service() {
         thread {
             try {
                 val apiKey = "AQ." + "Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
-                val url = URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
+                // Menggunakan endpoint v1 yang lebih stabil untuk model standar
+                val url = URL("https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$apiKey")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")
@@ -104,12 +104,12 @@ class FloatingService : Service() {
                     }
                 } else {
                     Handler(Looper.getMainLooper()).post {
-                        floatingButton?.text = "❌ Gagal AI ($responseCode)"
+                        floatingButton?.text = "❌ Error ($responseCode)"
                     }
                 }
             } catch (e: Exception) {
                 Handler(Looper.getMainLooper()).post {
-                    floatingButton?.text = "⚠️ Error: ${e.message?.take(15)}"
+                    floatingButton?.text = "⚠️ Net Error"
                 }
             }
         }
