@@ -115,8 +115,10 @@ class FloatingService : Service() {
         }
     }
 
-    override onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
-        if (floatingButton != null) windowManager?.removeView(floatingButton)
+        if (floatingButton != null) {
+            windowManager?.removeView(floatingButton)
+        }
     }
 }
