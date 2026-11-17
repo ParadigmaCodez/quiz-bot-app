@@ -15,6 +15,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+import org.json.JSONArray
 import org.json.JSONObject
 
 class FloatingService : Service() {
@@ -54,16 +55,14 @@ class FloatingService : Service() {
         }
 
         floatingButton?.setOnClickListener {
-            floatingButton?.text = "⏳ Gemini Menganalisis Layar..."
-            
-            // Mengirimkan instruksi ke Gemini Vision API
-            fetchGeminiVisionAnswer()
+            floatingButton?.text = "⏳ Gemini Menganalisis..."
+            fetchGeminiAnswer()
         }
 
         windowManager?.addView(floatingButton, params)
     }
 
-    private fun fetchGeminiVisionAnswer() {
+    private fun fetchGeminiAnswer() {
         thread {
             try {
                 val apiKey = "AQ." + "Ab8RN6KV44bln9CWre0ilf3MBXsoC46uoDEH7i9zkICTwrmmdA"
@@ -73,24 +72,24 @@ class FloatingService : Service() {
                 conn.setRequestProperty("Content-Type", "application/json")
                 conn.doOutput = true
 
-                // Karena kita menggunakan pendekatan teks cerdas / instruksi langsung pada halaman kuis aktif:
                 val jsonBody = JSONObject().apply {
-                    put("contents", listOf(
-                        JSONObject().apply {
-                            put("parts", listOf(
-                                JSONObject().apply {
-                                    put("text", "Halo Gemini, berikan format bantuan untuk menjawab kuis pilihan ganda secara cepat, akurat, dan singkat.")
-                                }
-                            ))
-                        }
-                    ))
+                    put("contents", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("parts", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("text", "Berikan format bantuan untuk menjawab kuis pilihan ganda secara cepat dan akurat.")
+                                })
+                            })
+                        })
+                    })
                 }
 
                 val writer = OutputStreamWriter(conn.outputStream)
                 writer.write(jsonBody.toString())
                 writer.flush()
 
-                if (conn.responseCode == 200) {
+                val responseCode = conn.responseCode
+                if (responseCode == 200) {
                     val response = conn.inputStream.bufferedReader().readText()
                     val jsonResp = JSONObject(response)
                     val answer = jsonResp.getJSONArray("candidates")
@@ -105,18 +104,18 @@ class FloatingService : Service() {
                     }
                 } else {
                     Handler(Looper.getMainLooper()).post {
-                        floatingButton?.text = "❌ Gagal AI (${conn.responseCode})"
+                        floatingButton?.text = "❌ Gagal AI ($responseCode)"
                     }
                 }
             } catch (e: Exception) {
                 Handler(Looper.getMainLooper()).post {
-                    floatingButton?.text = "⚠️ Error: ${e.message}"
+                    floatingButton?.text = "⚠️ Error: ${e.message?.take(15)}"
                 }
             }
         }
     }
 
-    override fun onDestroy() {
+    override onDestroy() {
         super.onDestroy()
         if (floatingButton != null) windowManager?.removeView(floatingButton)
     }
